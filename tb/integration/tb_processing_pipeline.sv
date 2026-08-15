@@ -51,7 +51,7 @@ module tb_processing_pipeline;
     logic [31:0] rd_data;
     logic triggered, frozen;
     logic [4:0] valid_record_count;
-    triggered_circular_buffer #(.RECORD_WIDTH(32), .DEPTH(16), .POST_SAMPLES(2)) buf(
+    triggered_circular_buffer #(.RECORD_WIDTH(32), .DEPTH(16), .POST_SAMPLES(2)) u_buffer(
         .clk, .reset_n, .rearm(1'b0), .sample_valid(logger_valid), .trigger(event_pulse), .record_in(logger_record),
         .rd_addr, .rd_data, .write_ptr, .trigger_addr, .triggered, .frozen, .valid_record_count
     );

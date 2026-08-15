@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module axis_calibration (
     input  logic clk,
     input  logic reset_n,
@@ -9,9 +10,7 @@ module axis_calibration (
 );
     logic signed [16:0] difference;
 
-    always_comb begin
-        difference = {sample_in[15], sample_in} - {offset[15], offset};
-    end
+    assign difference = {sample_in[15], sample_in} - {offset[15], offset};
 
     always_ff @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin

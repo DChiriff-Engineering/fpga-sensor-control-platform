@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module triggered_circular_buffer #(
     parameter integer RECORD_WIDTH = 112,
     parameter integer DEPTH        = 256,
@@ -22,13 +23,18 @@ module triggered_circular_buffer #(
     output logic [COUNT_WIDTH-1:0] valid_record_count
 );
     localparam integer POST_WIDTH = (POST_SAMPLES <= 1) ? 1 : $clog2(POST_SAMPLES + 1);
+    localparam logic [31:0] DEPTH_U = DEPTH;
+    localparam logic [31:0] POST_SAMPLES_U = POST_SAMPLES;
+    localparam logic [ADDR_WIDTH-1:0] LAST_ADDRESS = DEPTH_U[ADDR_WIDTH-1:0] - 1'b1;
+    localparam logic [COUNT_WIDTH-1:0] DEPTH_COUNT = DEPTH_U[COUNT_WIDTH-1:0];
+    localparam logic [POST_WIDTH-1:0] POST_COUNT = POST_SAMPLES_U[POST_WIDTH-1:0];
 
     logic [RECORD_WIDTH-1:0] memory [0:DEPTH-1];
     logic [POST_WIDTH-1:0] post_remaining;
 
     function automatic logic [ADDR_WIDTH-1:0] next_address(input logic [ADDR_WIDTH-1:0] address);
         begin
-            if (address == DEPTH - 1)
+            if (address == LAST_ADDRESS)
                 next_address = '0;
             else
                 next_address = address + 1'b1;
@@ -56,7 +62,7 @@ module triggered_circular_buffer #(
             post_remaining     <= '0;
         end else if (sample_valid && !frozen) begin
             memory[write_ptr] <= record_in;
-            if (valid_record_count < DEPTH)
+            if (valid_record_count < DEPTH_COUNT)
                 valid_record_count <= valid_record_count + 1'b1;
 
             if (!triggered && trigger) begin
@@ -66,7 +72,7 @@ module triggered_circular_buffer #(
                     frozen         <= 1'b1;
                     post_remaining <= '0;
                 end else begin
-                    post_remaining <= POST_SAMPLES;
+                    post_remaining <= POST_COUNT;
                 end
             end else if (triggered) begin
                 if (post_remaining <= 1) begin

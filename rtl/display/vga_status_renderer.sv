@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module vga_status_renderer (
     input  logic active_video,
     input  logic [9:0] pixel_x,

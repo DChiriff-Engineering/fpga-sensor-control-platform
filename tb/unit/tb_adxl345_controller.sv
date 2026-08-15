@@ -58,7 +58,7 @@ module tb_adxl345_controller;
         begin $display("FAIL tb_adxl345_controller: %s", msg); $fatal(1); end
     endtask
 
-    always_ff @(posedge clk or negedge reset_n) begin
+    always @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             transaction_index <= 0;
             delay_count <= 0;

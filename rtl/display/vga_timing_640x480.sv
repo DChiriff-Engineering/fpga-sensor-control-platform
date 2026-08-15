@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module vga_timing_640x480 (
     input  logic clk,
     input  logic reset_n,
@@ -9,17 +10,15 @@ module vga_timing_640x480 (
     output logic vsync_n,
     output logic frame_start
 );
-    localparam integer H_VISIBLE = 640;
-    localparam integer H_FRONT   = 16;
-    localparam integer H_SYNC    = 96;
-    localparam integer H_BACK    = 48;
-    localparam integer H_TOTAL   = H_VISIBLE + H_FRONT + H_SYNC + H_BACK;
+    localparam logic [9:0] H_VISIBLE    = 10'd640;
+    localparam logic [9:0] H_SYNC_START = 10'd656;
+    localparam logic [9:0] H_SYNC_END   = 10'd752;
+    localparam logic [9:0] H_TOTAL_LAST = 10'd799;
 
-    localparam integer V_VISIBLE = 480;
-    localparam integer V_FRONT   = 10;
-    localparam integer V_SYNC    = 2;
-    localparam integer V_BACK    = 33;
-    localparam integer V_TOTAL   = V_VISIBLE + V_FRONT + V_SYNC + V_BACK;
+    localparam logic [9:0] V_VISIBLE    = 10'd480;
+    localparam logic [9:0] V_SYNC_START = 10'd490;
+    localparam logic [9:0] V_SYNC_END   = 10'd492;
+    localparam logic [9:0] V_TOTAL_LAST = 10'd524;
 
     logic [9:0] h_count;
     logic [9:0] v_count;
@@ -32,9 +31,9 @@ module vga_timing_640x480 (
         end else begin
             frame_start <= 1'b0;
             if (pixel_ce) begin
-                if (h_count == H_TOTAL - 1) begin
+                if (h_count == H_TOTAL_LAST) begin
                     h_count <= 10'd0;
-                    if (v_count == V_TOTAL - 1) begin
+                    if (v_count == V_TOTAL_LAST) begin
                         v_count     <= 10'd0;
                         frame_start <= 1'b1;
                     end else begin
@@ -51,9 +50,9 @@ module vga_timing_640x480 (
         pixel_x      = h_count;
         pixel_y      = v_count;
         active_video = (h_count < H_VISIBLE) && (v_count < V_VISIBLE);
-        hsync_n      = !((h_count >= H_VISIBLE + H_FRONT) &&
-                         (h_count <  H_VISIBLE + H_FRONT + H_SYNC));
-        vsync_n      = !((v_count >= V_VISIBLE + V_FRONT) &&
-                         (v_count <  V_VISIBLE + V_FRONT + V_SYNC));
+        hsync_n      = !((h_count >= H_SYNC_START) &&
+                         (h_count < H_SYNC_END));
+        vsync_n      = !((v_count >= V_SYNC_START) &&
+                         (v_count < V_SYNC_END));
     end
 endmodule

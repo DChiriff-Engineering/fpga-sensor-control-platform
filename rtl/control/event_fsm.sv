@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module event_fsm #(
     parameter integer DWELL_SAMPLES    = 2,
     parameter integer HOLD_SAMPLES     = 10,
@@ -20,6 +21,15 @@ module event_fsm #(
     localparam logic [2:0] ST_HOLD     = 3'd3;
     localparam logic [2:0] ST_RECOVERY = 3'd4;
 
+    localparam logic [31:0] HYSTERESIS_CODES_U = HYSTERESIS_CODES;
+    localparam logic [31:0] DWELL_SAMPLES_U = DWELL_SAMPLES;
+    localparam logic [31:0] HOLD_SAMPLES_U = HOLD_SAMPLES;
+    localparam logic [31:0] RECOVERY_SAMPLES_U = RECOVERY_SAMPLES;
+    localparam logic [15:0] HYSTERESIS_CODE = HYSTERESIS_CODES_U[15:0];
+    localparam logic [15:0] DWELL_LAST = (DWELL_SAMPLES <= 1) ? 16'd0 : DWELL_SAMPLES_U[15:0] - 1'b1;
+    localparam logic [15:0] HOLD_LAST = (HOLD_SAMPLES <= 1) ? 16'd0 : HOLD_SAMPLES_U[15:0] - 1'b1;
+    localparam logic [15:0] RECOVERY_LAST = (RECOVERY_SAMPLES <= 1) ? 16'd0 : RECOVERY_SAMPLES_U[15:0] - 1'b1;
+
     logic [15:0] dwell_count;
     logic [15:0] hold_count;
     logic [15:0] recovery_count;
@@ -29,8 +39,8 @@ module event_fsm #(
     logic [31:0] low_threshold_sq;
 
     always_comb begin
-        if (threshold_code > HYSTERESIS_CODES)
-            low_threshold_code = threshold_code - HYSTERESIS_CODES;
+        if (threshold_code > HYSTERESIS_CODE)
+            low_threshold_code = threshold_code - HYSTERESIS_CODE;
         else
             low_threshold_code = 16'd0;
 
@@ -63,7 +73,7 @@ module event_fsm #(
 
                     ST_ARMED: begin
                         if (metric >= {2'b00, high_threshold_sq}) begin
-                            if (DWELL_SAMPLES <= 1 || dwell_count >= DWELL_SAMPLES - 1) begin
+                            if (DWELL_SAMPLES <= 1 || dwell_count >= DWELL_LAST) begin
                                 state       <= ST_EVENT;
                                 event_pulse <= 1'b1;
                                 dwell_count <= 16'd0;
@@ -83,7 +93,7 @@ module event_fsm #(
                     end
 
                     ST_HOLD: begin
-                        if (HOLD_SAMPLES <= 1 || hold_count >= HOLD_SAMPLES - 1) begin
+                        if (HOLD_SAMPLES <= 1 || hold_count >= HOLD_LAST) begin
                             state          <= ST_RECOVERY;
                             hold_count     <= 16'd0;
                             recovery_count <= 16'd0;
@@ -94,7 +104,7 @@ module event_fsm #(
 
                     ST_RECOVERY: begin
                         if (metric <= {2'b00, low_threshold_sq}) begin
-                            if (RECOVERY_SAMPLES <= 1 || recovery_count >= RECOVERY_SAMPLES - 1) begin
+                            if (RECOVERY_SAMPLES <= 1 || recovery_count >= RECOVERY_LAST) begin
                                 state          <= ST_ARMED;
                                 recovery_count <= 16'd0;
                             end else begin

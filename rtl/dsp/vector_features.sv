@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module vector_features (
     input  logic clk,
     input  logic reset_n,
@@ -33,22 +34,20 @@ module vector_features (
         end
     endfunction
 
-    always_comb begin
-        x_square_s = $signed(x_in) * $signed(x_in);
-        y_square_s = $signed(y_in) * $signed(y_in);
-        z_square_s = $signed(z_in) * $signed(z_in);
-        magnitude_comb = {2'b00, x_square_s[31:0]}
-                       + {2'b00, y_square_s[31:0]}
-                       + {2'b00, z_square_s[31:0]};
+    assign x_square_s = $signed(x_in) * $signed(x_in);
+    assign y_square_s = $signed(y_in) * $signed(y_in);
+    assign z_square_s = $signed(z_in) * $signed(z_in);
+    assign magnitude_comb = {2'b00, x_square_s[31:0]}
+                          + {2'b00, y_square_s[31:0]}
+                          + {2'b00, z_square_s[31:0]};
 
-        dx = {x_in[15], x_in} - {prev_x[15], prev_x};
-        dy = {y_in[15], y_in} - {prev_y[15], prev_y};
-        dz = {z_in[15], z_in} - {prev_z[15], prev_z};
-        abs_dx = abs17(dx);
-        abs_dy = abs17(dy);
-        abs_dz = abs17(dz);
-        roc_comb = {1'b0, abs_dx} + {1'b0, abs_dy} + {1'b0, abs_dz};
-    end
+    assign dx = {x_in[15], x_in} - {prev_x[15], prev_x};
+    assign dy = {y_in[15], y_in} - {prev_y[15], prev_y};
+    assign dz = {z_in[15], z_in} - {prev_z[15], prev_z};
+    assign abs_dx = abs17(dx);
+    assign abs_dy = abs17(dy);
+    assign abs_dz = abs17(dz);
+    assign roc_comb = {1'b0, abs_dx} + {1'b0, abs_dy} + {1'b0, abs_dz};
 
     always_ff @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin

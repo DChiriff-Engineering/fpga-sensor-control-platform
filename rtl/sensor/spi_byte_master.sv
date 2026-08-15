@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module spi_byte_master #(
     // SPI SCLK = clk / (2 * CLK_DIV). At 50 MHz and CLK_DIV=25, SCLK=1 MHz.
     parameter integer CLK_DIV = 25
@@ -14,6 +15,8 @@ module spi_byte_master #(
     input  logic       miso
 );
     localparam integer DIV_WIDTH = (CLK_DIV <= 1) ? 1 : $clog2(CLK_DIV);
+    localparam logic [31:0] CLK_DIV_U = CLK_DIV;
+    localparam logic [DIV_WIDTH-1:0] DIV_LAST = CLK_DIV_U[DIV_WIDTH-1:0] - 1'b1;
 
     logic [DIV_WIDTH-1:0] div_count;
     logic [7:0] tx_shift;
@@ -47,7 +50,7 @@ module spi_byte_master #(
                     bit_index    <= 3'd7;
                     phase_rising <= 1'b0;
                 end
-            end else if (div_count == CLK_DIV - 1) begin
+            end else if (div_count == DIV_LAST) begin
                 div_count <= '0;
                 if (!phase_rising) begin
                     // Mode 3 changes data on the falling edge.

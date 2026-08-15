@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module iir_lowpass_axis #(
     parameter integer IN_WIDTH    = 16,
     parameter integer FRAC_BITS   = 8,
@@ -21,14 +22,12 @@ module iir_lowpass_axis #(
     logic signed [ACC_WIDTH-1:0] next_accumulator;
     logic signed [ACC_WIDTH-1:0] next_output_scaled;
 
-    always_comb begin
-        sample_extended    = {{(ACC_WIDTH-IN_WIDTH){sample_in[IN_WIDTH-1]}}, sample_in};
-        target_fixed       = sample_extended <<< FRAC_BITS;
-        error_fixed        = target_fixed - accumulator;
-        correction         = error_fixed >>> ALPHA_SHIFT;
-        next_accumulator   = accumulator + correction;
-        next_output_scaled = next_accumulator >>> FRAC_BITS;
-    end
+    assign sample_extended    = {{(ACC_WIDTH-IN_WIDTH){sample_in[IN_WIDTH-1]}}, sample_in};
+    assign target_fixed       = sample_extended <<< FRAC_BITS;
+    assign error_fixed        = target_fixed - accumulator;
+    assign correction         = error_fixed >>> ALPHA_SHIFT;
+    assign next_accumulator   = accumulator + correction;
+    assign next_output_scaled = next_accumulator >>> FRAC_BITS;
 
     always_ff @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin

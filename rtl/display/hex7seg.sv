@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module hex7seg (
     input  logic [3:0] value,
     output logic [7:0] segments_n

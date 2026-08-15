@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module fpga_sensor_control_top (
     input  logic        CLOCK_50,
     input  logic [1:0]  KEY,

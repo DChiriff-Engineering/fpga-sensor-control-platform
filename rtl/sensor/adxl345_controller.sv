@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module adxl345_controller #(
     parameter integer STARTUP_CYCLES = 50_000,
     parameter integer TIMEOUT_CYCLES = 5_000
@@ -56,6 +57,10 @@ module adxl345_controller #(
 
     localparam integer STARTUP_WIDTH = (STARTUP_CYCLES <= 1) ? 1 : $clog2(STARTUP_CYCLES);
     localparam integer TIMEOUT_WIDTH = (TIMEOUT_CYCLES <= 1) ? 1 : $clog2(TIMEOUT_CYCLES);
+    localparam logic [31:0] STARTUP_CYCLES_U = STARTUP_CYCLES;
+    localparam logic [31:0] TIMEOUT_CYCLES_U = TIMEOUT_CYCLES;
+    localparam logic [STARTUP_WIDTH-1:0] STARTUP_LAST = STARTUP_CYCLES_U[STARTUP_WIDTH-1:0] - 1'b1;
+    localparam logic [TIMEOUT_WIDTH-1:0] TIMEOUT_LAST = TIMEOUT_CYCLES_U[TIMEOUT_WIDTH-1:0] - 1'b1;
 
     logic [STARTUP_WIDTH-1:0] startup_count;
     logic [TIMEOUT_WIDTH-1:0] timeout_count;
@@ -114,7 +119,7 @@ module adxl345_controller #(
 
             case (state)
                 ST_BOOT: begin
-                    if (STARTUP_CYCLES <= 1 || startup_count == STARTUP_CYCLES - 1) begin
+                    if (STARTUP_CYCLES <= 1 || startup_count == STARTUP_LAST) begin
                         startup_count <= '0;
                         cs_n          <= 1'b0;
                         state         <= ST_DEVID_CMD_START;
@@ -136,7 +141,7 @@ module adxl345_controller #(
                     if (spi_done) begin
                         timeout_count <= '0;
                         state         <= ST_DEVID_DATA_START;
-                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_CYCLES - 1) begin
+                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_LAST) begin
                         enter_error();
                     end else begin
                         timeout_count <= timeout_count + 1'b1;
@@ -158,7 +163,7 @@ module adxl345_controller #(
                         cs_n          <= 1'b1;
                         timeout_count <= '0;
                         state         <= ST_DEVID_CHECK;
-                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_CYCLES - 1) begin
+                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_LAST) begin
                         enter_error();
                     end else begin
                         timeout_count <= timeout_count + 1'b1;
@@ -188,7 +193,7 @@ module adxl345_controller #(
                     if (spi_done) begin
                         timeout_count <= '0;
                         state         <= ST_CFG_DATA_START;
-                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_CYCLES - 1) begin
+                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_LAST) begin
                         enter_error();
                     end else begin
                         timeout_count <= timeout_count + 1'b1;
@@ -209,7 +214,7 @@ module adxl345_controller #(
                         cs_n          <= 1'b1;
                         timeout_count <= '0;
                         state         <= ST_CFG_NEXT;
-                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_CYCLES - 1) begin
+                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_LAST) begin
                         enter_error();
                     end else begin
                         timeout_count <= timeout_count + 1'b1;
@@ -249,7 +254,7 @@ module adxl345_controller #(
                     if (spi_done) begin
                         timeout_count <= '0;
                         state         <= ST_READ_DATA_START;
-                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_CYCLES - 1) begin
+                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_LAST) begin
                         enter_error();
                     end else begin
                         timeout_count <= timeout_count + 1'b1;
@@ -280,7 +285,7 @@ module adxl345_controller #(
                             read_index <= read_index + 1'b1;
                             state      <= ST_READ_DATA_START;
                         end
-                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_CYCLES - 1) begin
+                    end else if (TIMEOUT_CYCLES <= 1 || timeout_count == TIMEOUT_LAST) begin
                         enter_error();
                     end else begin
                         timeout_count <= timeout_count + 1'b1;

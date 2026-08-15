@@ -4,8 +4,6 @@ module tb_sample_timer;
     logic reset_n = 0;
     logic enable = 0;
     logic sample_tick;
-    integer tick_count = 0;
-    integer cycle_since_tick = 0;
 
     always #5 clk = ~clk;
 
@@ -17,33 +15,44 @@ module tb_sample_timer;
         begin $display("FAIL tb_sample_timer: %s", msg); $fatal(1); end
     endtask
 
+    task automatic expect_cycle(input logic expected_tick, input string label);
+        begin
+            @(posedge clk);
+            #1;
+            if (sample_tick !== expected_tick) begin
+                $display("%s expected_tick=%0b actual_tick=%0b", label, expected_tick, sample_tick);
+                fail("sample_tick did not match expected cadence");
+            end
+        end
+    endtask
+
     initial begin
+        // Drive controls away from the DUT's active edge so the test has no
+        // reset/enable scheduling race with the sequential implementation.
         repeat (2) @(posedge clk);
+        @(negedge clk);
         reset_n = 1;
         enable = 1;
 
-        repeat (12) begin
-            @(posedge clk);
-            #1;
-            cycle_since_tick = cycle_since_tick + 1;
-            if (sample_tick) begin
-                tick_count = tick_count + 1;
-                if (cycle_since_tick != 4) fail("tick spacing is not four clocks");
-                cycle_since_tick = 0;
-            end
-        end
-        if (tick_count != 3) fail("expected three ticks in twelve enabled cycles");
+        // PERIOD_CYCLES = 20 / 5 = 4. Expect a one-cycle pulse every fourth
+        // enabled rising edge, beginning four full enabled clocks after start.
+        repeat (3) expect_cycle(1'b0, "first period pre-tick");
+        expect_cycle(1'b1, "first period tick");
+        repeat (3) expect_cycle(1'b0, "second period pre-tick");
+        expect_cycle(1'b1, "second period tick");
+        repeat (3) expect_cycle(1'b0, "third period pre-tick");
+        expect_cycle(1'b1, "third period tick");
 
+        // Disable on a falling edge. The DUT resets phase and must not tick.
+        @(negedge clk);
         enable = 0;
-        repeat (3) @(posedge clk);
-        #1;
-        if (sample_tick) fail("tick asserted while disabled");
+        repeat (3) expect_cycle(1'b0, "disabled");
 
+        // Re-enable on a falling edge and verify phase starts over cleanly.
+        @(negedge clk);
         enable = 1;
-        cycle_since_tick = 0;
-        repeat (4) @(posedge clk);
-        #1;
-        if (!sample_tick) fail("counter did not restart cleanly after disable");
+        repeat (3) expect_cycle(1'b0, "restart pre-tick");
+        expect_cycle(1'b1, "restart tick");
 
         $display("PASS tb_sample_timer");
         $finish;

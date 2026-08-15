@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module tb_reset_sync;
     logic clk = 0;
-    logic async_reset_n = 0;
+    logic async_reset_n = 1;
     logic reset_n;
 
     always #5 clk = ~clk;
@@ -17,6 +17,10 @@ module tb_reset_sync;
     endtask
 
     initial begin
+        // Generate an actual high-to-low transition; a signal initialized low
+        // at time zero does not guarantee a negedge event in every simulator.
+        #1;
+        async_reset_n = 1'b0;
         #1;
         if (reset_n !== 1'b0) fail("reset must assert asynchronously");
 

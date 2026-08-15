@@ -1,0 +1,40 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs / temporary files
+*.log
+*.tmp
+*~
+
+    # Quartus generated output / databases
+    db/
+    incremental_db/
+    output_files/
+    simulation/
+    greybox_tmp/
+    hc_output/
+    c5_pin_model_dump.txt
+    *.qws
+    *.qdf
+    *.sld
+    *.sof
+    *.pof
+    *.jic
+    *.rpt
+    *.summary
+    *.done
+    *.smsg
+    *.chg
+    *.bak
+    *.qws
+
+    # Questa / ModelSim generated
+    work/
+    transcript
+    vsim.wlf
+    *.wlf

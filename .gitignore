@@ -11,30 +11,42 @@ Thumbs.db
 *.tmp
 *~
 
-    # Quartus generated output / databases
-    db/
-    incremental_db/
-    output_files/
-    simulation/
-    greybox_tmp/
-    hc_output/
-    c5_pin_model_dump.txt
-    *.qws
-    *.qdf
-    *.sld
-    *.sof
-    *.pof
-    *.jic
-    *.rpt
-    *.summary
-    *.done
-    *.smsg
-    *.chg
-    *.bak
-    *.qws
+# Quartus generated output / databases
+db/
+incremental_db/
+output_files*/
+simulation/
+greybox_tmp/
+hc_output/
+c5_pin_model_dump.txt
+*.qws
+*.qdf
+*.sld
+*.sof
+*.pof
+*.jic
+*.rpt
+*.summary
+*.done
+*.smsg
+*.chg
+*.bak
 
-    # Questa / ModelSim generated
-    work/
-    transcript
-    vsim.wlf
-    *.wlf
+# Questa / ModelSim generated
+work/
+transcript
+vsim.wlf
+*.wlf
+
+# Open-source simulation/lint output
+build/
+*.vcd
+*.fst
+obj_dir/
+
+# Local hardware evidence; curated/public evidence may be added deliberately
+results/local/
+
+# Locally generated Quartus project files
+/quartus/*.qpf
+/quartus/*.qsf

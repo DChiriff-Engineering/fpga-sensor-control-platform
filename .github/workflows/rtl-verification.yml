@@ -1,0 +1,27 @@
+name: RTL verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  simulation-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install open-source HDL tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends iverilog verilator
+
+      - name: Run self-checking SystemVerilog simulations
+        run: bash scripts/run_sim.sh
+
+      - name: Run Verilator RTL lint
+        run: bash scripts/lint_rtl.sh

@@ -26,7 +26,8 @@
 - [x] Icarus simulation runner written.
 - [x] Verilator lint runner written.
 - [x] GitHub Actions workflow written.
-- [ ] CI run green on committed implementation.
+- [x] 14/14 self-checking simulations pass in GitHub Actions.
+- [x] Strict Verilator RTL lint passes in GitHub Actions.
 
 ## Phase 3 — Toolchain / physical board smoke test
 

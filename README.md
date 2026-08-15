@@ -1,6 +1,6 @@
 # FPGA Real-Time Sensor Acquisition, DSP & Control Platform
 
-**Status:** RTL implementation baseline complete; automated simulation/lint and physical DE10-Lite validation are the next gates.
+**Status:** Hardware-independent RTL baseline implemented and verified by automated simulation/lint; physical DE10-Lite, Quartus/TimeQuest, SignalTap, and measured hardware validation remain pending.
 
 A processor-free FPGA instrumentation platform for the Terasic DE10-Lite / Intel MAX 10. The design autonomously acquires the onboard ADXL345 accelerometer over SPI, applies fixed-point signal processing, detects motion events with a hysteretic sample-domain state machine, preserves triggered history in an inferred circular memory, and exposes live status through LEDs, seven-segment displays, and a simple VGA engineering view.
 
@@ -80,13 +80,17 @@ docs/                requirements, architecture, interfaces, verification, bring
 .github/workflows/    open-source RTL CI
 ```
 
-## Verification strategy
+## Automated verification
 
-The open-source CI path is designed to run every unit/integration test with Icarus Verilog and lint synthesizable RTL with Verilator. Testbenches cover:
+GitHub Actions runs the self-checking SystemVerilog suite with Icarus Verilog and runs strict Verilator lint on the synthesizable main RTL. The verified baseline passed **14/14 simulations** (13 unit + 1 integration) and Verilator lint. Intentional unused diagnostic/readback signals are excluded from the lint warning gate; other lint warnings remain fatal.
 
-- exact sample-timer cadence;
+The test suite covers:
+
+- asynchronous-assert/synchronous-release reset behavior;
+- exact sample-timer cadence and restart behavior;
 - SPI mode-3 byte transfer;
 - ADXL345 DEVID/config/burst-read command sequencing;
+- ADXL345 wrong-identity and transfer-timeout failure handling;
 - signed XYZ reconstruction;
 - saturating offset correction;
 - fixed-point IIR step behavior;
@@ -94,7 +98,7 @@ The open-source CI path is designed to run every unit/integration test with Icar
 - threshold equality, hysteresis, dwell, hold, recovery, repeated events;
 - circular-buffer wrap, trigger address, exact post-trigger count, freeze/rearm;
 - seven-segment decode;
-- VGA sync timing;
+- VGA sync timing and status rendering;
 - integrated DSP -> event -> logger behavior.
 
 See [Verification Plan](docs/verification-plan.md), [Traceability](docs/traceability.md), and [Test Results](docs/test-results.md).
@@ -132,13 +136,13 @@ A separate `de10_lite_smoke_top` exists for the first physical milestone: each s
 
 ## Results
 
+**Automated RTL verification:** 14/14 self-checking simulations PASS; Verilator lint PASS on the verified baseline.
+
 **Hardware results:** _Not yet available._
 
 **Timing/resource results:** _Not yet available._
 
 **SignalTap evidence:** _Not yet available._
-
-Automated simulation/lint status will be recorded here only after the GitHub Actions workflow runs successfully on the committed RTL.
 
 ## Skills demonstrated by the implemented baseline
 

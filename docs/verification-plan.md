@@ -15,9 +15,11 @@ Verification is layered so a passing RTL simulation is never confused with passi
 
 | Testbench | Primary behavior | Important boundaries |
 |---|---|---|
+| `tb_reset_sync` | reset synchronization | asynchronous assertion, two-stage synchronous deassertion |
 | `tb_sample_timer` | exact sample cadence | disable/re-enable phase reset |
 | `tb_spi_byte_master` | SPI mode-3 byte shift | MSB-first loopback, idle-high clock |
 | `tb_adxl345_controller` | DEVID/config/read sequencing | coherent XYZ reconstruction, CS ownership |
+| `tb_adxl345_error` | controller failure handling | wrong DEVID, transfer timeout, fail-closed state |
 | `tb_axis_calibration` | offset correction | positive/negative saturation |
 | `tb_iir_lowpass_axis` | fixed-point IIR | first sample, known step values |
 | `tb_vector_features` | M² and ROC | first-sample ROC, signed extreme square |
@@ -25,6 +27,7 @@ Verification is layered so a passing RTL simulation is never confused with passi
 | `tb_triggered_circular_buffer` | ring/trigger/freeze | wrap, exact post count, ignored writes while frozen, rearm |
 | `tb_hex7seg` | active-low decode | representative 0/A/F glyphs |
 | `tb_vga_timing_640x480` | VGA counters/sync | 96-pixel HS pulse, frame wrap |
+| `tb_vga_status_renderer` | status visualization | blanking, axis bar, error/frozen status colors |
 
 ## Integration simulation
 
@@ -35,9 +38,11 @@ Verification is layered so a passing RTL simulation is never confused with passi
 - the logger captures post-trigger data and freezes;
 - the integration test terminates with no assertion/fatal failure.
 
-## Automated CI
+## Automated CI acceptance
 
 `.github/workflows/rtl-verification.yml` installs Icarus Verilog and Verilator on Ubuntu, runs every self-checking testbench, then lints the synthesizable main RTL.
+
+The current verified baseline passed **13/13 unit tests, 1/1 integration test, and Verilator lint**. Verilator uses `--Wall`; only intentional unused diagnostic/readback signals are exempted. All other lint warnings are fatal to CI.
 
 CI proves only the committed source under those tools. It does **not** substitute for Quartus fitting/TimeQuest or board testing.
 
